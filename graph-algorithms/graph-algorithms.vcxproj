@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{086886E7-BF41-486C-AA3A-E168907E908E}</ProjectGuid>
+    <ProjectGuid>{D8CF6468-44AB-4099-B8E1-BAA71B6E9798}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>graphalgorithms</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
@@ -154,7 +154,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="graph algorithms.cpp" />
+    <ClCompile Include="graph-algorithms.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

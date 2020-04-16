@@ -23,7 +23,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="graph algorithms.cpp">
+    <ClCompile Include="graph-algorithms.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
