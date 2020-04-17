@@ -19,9 +19,11 @@ private:
 	// stack and queue help reloaded label
 	queue<int> queForBfs;
 	stack<int> stackForDfs;
+	// aka count Vertex
 	int _matrSize;
 	int countAdjComp = 0;
 	bool writeTrace = false;
+	int countEdges = 0;
 
 	void initAdjList() {
 		adjList.resize(_matrSize, vector<int>());
@@ -85,6 +87,11 @@ private:
 		}*/	
 	}
 
+	void initCountEdge() {
+		for (int i = 0; i < adjList.size(); i++)
+			countEdges += adjList[i].size();
+	}
+
 public:
 	// TODO: сделать возможность ввода данных из текстового файла и с клавиатуры
 	Graph() {
@@ -100,6 +107,7 @@ public:
 
 		initAdjList();
 		lableInit();
+		initCountEdge();
 	}
 
 	void printMatrix() {
@@ -152,7 +160,23 @@ public:
 		// TODO
 	}
 
+	int getCountEdge() {
+		return countEdges;
+	}
+
+	// tree has n - 1 edges and 1 connectivity component
+	// loess - its  Tree? 
+	bool itsTree() {
+		if (getCountEdge() == _matrSize - 1) {
+			for (int i = 1; i < label.size(); i++) 
+				if (label[i] == false) return false;
+			return true;
+		}
+		return false;
+	}
+
 	bool haveLoop() {
+		
 		return 0;
 	}
 
@@ -179,5 +203,6 @@ int main()
 	for (auto iter : dfsTrace)
 		cout << iter << " ";
 
+	cout << "It is tree " << g1.itsTree() << endl;
 
 }
