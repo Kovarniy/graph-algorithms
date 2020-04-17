@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <fstream>
+#include <stack>
 
 using namespace std;
 
@@ -12,8 +13,11 @@ class Graph {
 private:
 	vector<vector<int>> adjMatrix;
 	vector<vector<int>> adjList;
+	// label need for check visited vertex
 	vector<bool> label;
-	queue <int> queForBfs;
+	// stack and queue help reloaded label
+	queue<int> queForBfs;
+	stack<int> stackForDfs;
 	int _matrSize;
 
 	void createAdjList() {
@@ -56,12 +60,6 @@ public:
 		lableInit();
 	}
 
-	~Graph() {
-		cout << "Goodbye!" << endl;
-		// Distructure for vector. Is it necessary? 
-		//delete[] label;
-	}
-
 	void printMatrix() {
 		for (int i = 0; i < _matrSize; i++, cout << endl)
 			for (int j = 0; j < _matrSize; j++)
@@ -79,7 +77,12 @@ public:
 		cout << vertexNum << " ";
 		label[vertexNum] = true;
 		for (auto iter : adjList[vertexNum])
-			if (label[iter] == false) dfs(iter);
+			if (label[iter] == false) {
+				stackForDfs.push(iter);
+				dfs(iter);
+				stackForDfs.pop();
+			}
+		if (stackForDfs.empty()) lableReload();
 	}
 
 	// this function print bfs trace
@@ -100,6 +103,10 @@ public:
 			queForBfs.pop();
 			bfs(buffer);
 		}
+		else {
+			// before end algorithm
+			lableReload();
+		}
 	}
 
 	// get optimal path 
@@ -118,8 +125,11 @@ int main()
 {
 	Graph g1, g2;
 	g1.printMatrix();
-	g1.printAdjList();
-	//g1.dfs(1); 
+	g1.printAdjList();	
+	g1.dfs(1);
 	cout << endl;
 	g2.bfs(0);
+
+	
+	
 }
