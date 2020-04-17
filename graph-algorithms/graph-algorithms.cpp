@@ -13,14 +13,17 @@ class Graph {
 private:
 	vector<vector<int>> adjMatrix;
 	vector<vector<int>> adjList;
+	vector<int> algorithmTrace;
 	// label need for check visited vertex
 	vector<bool> label;
 	// stack and queue help reloaded label
 	queue<int> queForBfs;
 	stack<int> stackForDfs;
 	int _matrSize;
+	int countAdjComp = 0;
+	bool writeTrace = false;
 
-	void createAdjList() {
+	void initAdjList() {
 		adjList.resize(_matrSize, vector<int>());
 		for (int i = 0; i < _matrSize; i++) {
 			// j = i + 1; - небольшая оптимизация, для того чтобы обохоидть только верхнюю часть матрицы
@@ -43,6 +46,41 @@ private:
 			label[i] = false;
 	}
 
+	// this function print dfs trace
+	void dfs(int vertexNum) {
+		if (writeTrace) algorithmTrace.push_back(vertexNum);
+		label[vertexNum] = true;
+		for (auto iter : adjList[vertexNum])
+			if (label[iter] == false) {
+				stackForDfs.push(iter);
+				dfs(iter);
+				stackForDfs.pop();
+			}
+		//if (stackForDfs.empty()) lableReload();
+	}
+
+	// this function print bfs trace
+	void bfs(int vertexNum) {
+		if (writeTrace) algorithmTrace.push_back(vertexNum);
+		label[vertexNum] = true;
+		for (auto iter : adjList[vertexNum])
+			if (label[iter] == false) {
+				label[iter] = true;
+				queForBfs.push(iter);
+			}
+
+		if (!queForBfs.empty())
+		{
+			// add firs queue element to buffer
+			int buffer = queForBfs.front();
+			// and remove it in queue
+			queForBfs.pop();
+			bfs(buffer);
+		} /* else {
+			lableReload();
+		}*/	
+	}
+
 public:
 	// TODO: сделать возможность ввода данных из текстового файла и с клавиатуры
 	Graph() {
@@ -56,7 +94,7 @@ public:
 			for (int j = 0; j < _matrSize; j++)
 				fin >> adjMatrix[i][j];
 
-		createAdjList();
+		initAdjList();
 		lableInit();
 	}
 
@@ -72,41 +110,35 @@ public:
 				cout << adjList[i][j];
 	}
 
-	// this function print dfs trace
-	void dfs(int vertexNum) {
-		cout << vertexNum << " ";
-		label[vertexNum] = true;
-		for (auto iter : adjList[vertexNum])
-			if (label[iter] == false) {
-				stackForDfs.push(iter);
-				dfs(iter);
-				stackForDfs.pop();
-			}
-		if (stackForDfs.empty()) lableReload();
+	vector<int> getBfsTrace(int vertex) {
+		// Я не уверен, что это оптимальный метод очистки вектора
+		if (!algorithmTrace.empty()) algorithmTrace.clear();
+		writeTrace = true;
+		dfs(vertex);
+		writeTrace = false;
+		return algorithmTrace;
 	}
 
-	// this function print bfs trace
-	void bfs(int vertexNum) {
-		cout << vertexNum << " ";
-		label[vertexNum] = true;
-		for (auto iter : adjList[vertexNum])
-			if (label[iter] == false) {
-				label[iter] = true;
-				queForBfs.push(iter);
-			}
+	vector<int> getDfsTrace(int vertex) { 
+		if (!algorithmTrace.empty()) algorithmTrace.clear();
+		writeTrace = true;
+		bfs(vertex);
+		writeTrace = false;
+		return algorithmTrace;
+	}
 
-		if (!queForBfs.empty())
-		{
-			// add firs queue element to buffer
-			int buffer = queForBfs.front();
-			// and remove it in queue
-			queForBfs.pop();
-			bfs(buffer);
+	// get count adjant compounents
+	int getCountAdjComp() {	
+		for (int i = 0; i < label.size(); i++) {
+			if (label[i] == false) {
+				bfs(i);
+				countAdjComp++;
+			}
 		}
-		else {
-			// before end algorithm
+		if(queForBfs.empty()) {
 			lableReload();
 		}
+		return countAdjComp;
 	}
 
 	// get optimal path 
@@ -114,22 +146,19 @@ public:
 		// TODO
 	}
 
-	// get count adjant compounents
-	void getCountAdjCompounents() {
-
+	bool haveLoop() {
+		return 0;
 	}
 
 };
 
 int main()
 {
-	Graph g1, g2;
+	Graph g1;
 	g1.printMatrix();
 	g1.printAdjList();	
-	g1.dfs(1);
-	cout << endl;
-	g2.bfs(0);
-
+	cout << "--------" << endl;
+	cout << g1.getCountAdjComp();
 	
 	
 }
