@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <fstream>
 
 using namespace std;
@@ -12,6 +13,7 @@ private:
 	vector<vector<int>> adjMatrix;
 	vector<vector<int>> adjList;
 	vector<bool> label;
+	queue <int> queForBfs;
 	int _matrSize;
 
 	void createAdjList() {
@@ -30,6 +32,7 @@ private:
 	void lableInit() {
 		label.resize(_matrSize, false);
 	}
+
 	// This function returnes label to false state
 	void lableReload() {
 		for (int i = 0; i < label.size(); i++)
@@ -79,14 +82,44 @@ public:
 			if (label[iter] == false) dfs(iter);
 	}
 
+	// this function print bfs trace
+	void bfs(int vertexNum) {
+		cout << vertexNum << " ";
+		label[vertexNum] = true;
+		for (auto iter : adjList[vertexNum])
+			if (label[iter] == false) {
+				label[iter] = true;
+				queForBfs.push(iter);
+			}
+
+		if (!queForBfs.empty())
+		{
+			// add firs queue element to buffer
+			int buffer = queForBfs.front();
+			// and remove it in queue
+			queForBfs.pop();
+			bfs(buffer);
+		}
+	}
+
+	// get optimal path 
+	void getOptimalPath(int vertexA, int vertexB) {
+		// TODO
+	}
+
+	// get count adjant compounents
+	void getCountAdjCompounents() {
+
+	}
+
 };
 
 int main()
 {
-	Graph g1;
+	Graph g1, g2;
 	g1.printMatrix();
 	g1.printAdjList();
-	g1.dfs(1); 
-	vector<bool> v;
-	v.resize(4, false);
+	//g1.dfs(1); 
+	cout << endl;
+	g2.bfs(0);
 }
