@@ -46,6 +46,10 @@ private:
 			label[i] = false;
 	}
 
+	// TODO косяк данной реализации заключается в том, что BFS
+	// и DFS не могут обнулять label. т.к. для подсчета компонент связанности 
+	// этот массив не должен быть обнулун. Ондако могут возникнуть проблемы при написании других функций
+	// таких, как getDfsTrace т.к. перед их вызовом нужно занулять массив label иначе будет ошибка
 	// this function print dfs trace
 	void dfs(int vertexNum) {
 		if (writeTrace) algorithmTrace.push_back(vertexNum);
@@ -111,18 +115,20 @@ public:
 	}
 
 	vector<int> getBfsTrace(int vertex) {
+		lableReload();
 		// Я не уверен, что это оптимальный метод очистки вектора
 		if (!algorithmTrace.empty()) algorithmTrace.clear();
 		writeTrace = true;
-		dfs(vertex);
+		bfs(vertex);
 		writeTrace = false;
 		return algorithmTrace;
 	}
 
 	vector<int> getDfsTrace(int vertex) { 
+		lableReload();
 		if (!algorithmTrace.empty()) algorithmTrace.clear();
 		writeTrace = true;
-		bfs(vertex);
+		dfs(vertex);
 		writeTrace = false;
 		return algorithmTrace;
 	}
@@ -158,7 +164,20 @@ int main()
 	g1.printMatrix();
 	g1.printAdjList();	
 	cout << "--------" << endl;
-	cout << g1.getCountAdjComp();
+	cout << "This graph has: " << g1.getCountAdjComp() << " connectivity component" << endl;
+	cout << "--------" << endl;
+
 	
-	
+	vector<int> bfsTrace = g1.getBfsTrace(3);
+	cout << "bfs trace: " << endl;
+	for (auto iter : bfsTrace)
+		cout << iter << " ";
+	cout << endl;
+
+	vector<int> dfsTrace = g1.getDfsTrace(3);
+	cout << "dfs trace: " << endl;
+	for (auto iter : dfsTrace)
+		cout << iter << " ";
+
+
 }
