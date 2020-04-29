@@ -13,6 +13,7 @@ class Graph {
 private:
 	vector<vector<int>> adjMatrix;
 	vector<vector<int>> adjList;
+	vector<vector<int>> connectCompunents;
 	vector<int> algorithmTrace;
 	// label need for check visited vertex
 	vector<bool> label;
@@ -21,11 +22,12 @@ private:
 	stack<int> stackForDfs;
 	// aka count Vertex
 	int _matrSize;
-	int countAdjComp = 0;
+	//int countAdjComp = 0;
 	bool writeTrace = false;
 	int countEdges = 0;
+	bool isWeighted = false;
 
-	void initAdjList() {
+	void matrixToList() {
 		adjList.resize(_matrSize, vector<int>());
 		for (int i = 0; i < _matrSize; i++) {
 			// j = i + 1; - небольшая оптимизация, для того чтобы обохоидть только верхнюю часть матрицы
@@ -38,8 +40,23 @@ private:
 		}
 	}
 
+	void listToMatrix() {
+		adjMatrix.resize(adjList.size(), vector<int>(adjList.size(), 0));
+		for (int i = 0; i < adjList.size(); i++) {
+			for (int j = 0; j < adjList[i].size(); j++) {
+				int indJ = adjList[i][j];
+				adjMatrix[i][indJ] = 1;
+			}
+		}
+	}
+
 	void lableInit() {
 		label.resize(_matrSize, false);
+	}
+
+	void initCountEdge() {
+		for (int i = 0; i < adjList.size(); i++)
+			countEdges += adjList[i].size();
 	}
 
 	// This function returnes label to false state
@@ -48,11 +65,24 @@ private:
 			label[i] = false;
 	}
 
-	// TODO косяк данной реализации заключается в том, что BFS
-	// и DFS не могут обнулять label. т.к. для подсчета компонент связанности 
-	// этот массив не должен быть обнулун. Ондако могут возникнуть проблемы при написании других функций
-	// таких, как getDfsTrace т.к. перед их вызовом нужно занулять массив label иначе будет ошибка
-	// this function print dfs trace
+	vector<int> bufferComp;
+	// this function init sum of connection compounents and it solution in vector view
+	void initAnyParameters() {
+		for (int i = 0; i < label.size(); i++) {
+			if (label[i] == false) {
+				bfs(i);
+				connectCompunents.push_back(bufferComp);
+				bufferComp.resize(0, 0);
+				// Данный параметр можно не считать, т.к. кол-во компонент связаности - это размер массива
+				// con-ionComp
+				//countAdjComp++;
+			}
+		}
+		if (queForBfs.empty()) {
+			lableReload();
+		}
+	}
+
 	void dfs(int vertexNum) {
 		if (writeTrace) algorithmTrace.push_back(vertexNum);
 		label[vertexNum] = true;
@@ -73,6 +103,8 @@ private:
 			if (label[iter] == false) {
 				label[iter] = true;
 				queForBfs.push(iter);
+				// formed vector of connection compinents
+				bufferComp.push_back(iter);
 			}
 
 		if (!queForBfs.empty())
@@ -85,29 +117,58 @@ private:
 		} /* else {
 			lableReload();
 		}*/	
-	}
 
-	void initCountEdge() {
-		for (int i = 0; i < adjList.size(); i++)
-			countEdges += adjList[i].size();
+
 	}
 
 public:
-	// TODO: сделать возможность ввода данных из текстового файла и с клавиатуры
-	Graph() {
-		ifstream fin;
-		fin.open(inputPuth);
-		fin >> _matrSize;
+	// Graph can be intialized wich adjacency matrix or list
+	Graph(vector<vector<int>> v) {
+		bool isMatrix = true;
+		_matrSize = v.size();
 
-		adjMatrix.resize(_matrSize, vector<int>(_matrSize));
+		// Check for input vector is matrix or list
+		for (int i = 0; i < v.size(); i++) {
+			for (int j = 0; j < v[i].size(); j++) {
+				if (v[i][j] > 1) isWeighted = true;
+			}
+			if (v.size() != v[i].size()) {
+				isMatrix = false;
+				break;
+			}
+		}
+		
+		// check matrix or list
+		if (isMatrix) {
+			for (int i = 0; i < v.size(); i++)
+				if (v[i][i] != 0) throw exception("it matrix has loop!");
+		}
+		else {
+			for (int i = 0; i < v.size(); i++) {
+				for (int j = 0; j < v[i].size(); j++) {
+					v[i][j] -= 1;
+					if (v[i][j] > v.size())
+						throw exception("Adjacency list is not correct");
+				}
+			}
+		}
 
-		for (int i = 0; i < _matrSize; i++)
-			for (int j = 0; j < _matrSize; j++)
-				fin >> adjMatrix[i][j];
-
-		initAdjList();
+		if (isMatrix) {
+			adjMatrix.resize(v.size(), vector<int>(v.size(),0));
+			copy(v.begin(), v.end(), adjMatrix.begin());
+			// init start parametres 
+			matrixToList();
+		}
+		else {
+			adjList.resize(v.size(), vector<int>());
+			for (int i = 0; i < v.size(); i++)
+				for (int j = 0; j < v[i].size(); j++)
+					adjList[i].push_back(v[i][j]);
+			listToMatrix();
+		}
 		lableInit();
 		initCountEdge();
+		initAnyParameters();
 	}
 
 	void printMatrix() {
@@ -141,18 +202,21 @@ public:
 		return algorithmTrace;
 	}
 
+	void printConnectComp() {
+		for (int i = 0; i < connectCompunents.size(); i++, cout << endl) {
+			cout << "Compounents numper " << i + 1 << " has next vertices: ";
+			for (int j = 0; j < connectCompunents[i].size(); j++)
+				cout << connectCompunents[i][j] << " ";
+		}
+	}
+
 	// get count adjant compounents
-	int getCountAdjComp() {	
-		for (int i = 0; i < label.size(); i++) {
-			if (label[i] == false) {
-				bfs(i);
-				countAdjComp++;
-			}
-		}
-		if(queForBfs.empty()) {
-			lableReload();
-		}
-		return countAdjComp;
+	int getCountСonnectComp() {	
+		return connectCompunents.size();
+	}
+
+	vector<vector<int>> getConnectCompunents() {
+		return connectCompunents;
 	}
 
 	// get optimal path 
@@ -176,7 +240,7 @@ public:
 	}
 
 	bool haveLoop() {
-		
+		// TODO
 		return 0;
 	}
 
@@ -184,25 +248,43 @@ public:
 
 int main()
 {
-	Graph g1;
-	g1.printMatrix();
-	g1.printAdjList();	
-	cout << "--------" << endl;
-	cout << "This graph has: " << g1.getCountAdjComp() << " connectivity component" << endl;
-	cout << "--------" << endl;
 
-	
-	vector<int> bfsTrace = g1.getBfsTrace(3);
-	cout << "bfs trace: " << endl;
-	for (auto iter : bfsTrace)
-		cout << iter << " ";
-	cout << endl;
+	// Task 4
+	vector<vector<int>> task4({ { 2, 4, 6 },
+								{ 1 },
+								{ 5, 9 },
+								{ 1 },
+								{ 3, 9 },
+								{ 1 },
+								{ 8, 10 },
+								{ 7, 10 , 11 },
+								{ 3, 5 },
+								{ 7, 8, 12 },
+								{ 8, 12},
+								{ 10, 11 } });
+	// Task 5
+	vector<vector<int>> task5({ { 0, 1, 0, 0, 0, 0, 0, 0, 0 },
+								{ 1, 0, 1, 0, 0, 1, 1, 0, 0 },
+								{ 0, 1, 0, 0, 0, 0, 0, 0, 0 },
+								{ 0, 0, 0, 0, 1, 0, 0, 1, 1 },
+								{ 0, 0, 0, 1, 0, 0, 0, 1, 0 },
+								{ 0, 1, 0, 0, 0, 0, 1, 0, 0 },
+								{ 0, 1, 0, 0, 0, 1, 0, 0, 0 },
+								{ 0, 0, 0, 1, 1, 0, 0, 0, 1 },
+								{ 0, 0, 0, 1, 0, 0, 0, 1, 0 } });
 
-	vector<int> dfsTrace = g1.getDfsTrace(3);
-	cout << "dfs trace: " << endl;
-	for (auto iter : dfsTrace)
-		cout << iter << " ";
-
-	cout << "It is tree " << g1.itsTree() << endl;
-
+	try
+	{
+		Graph g4(task4);
+		cout << "Graph in task 4 has " << g4.getCountСonnectComp() << " connectedness component" << endl;
+		g4.printConnectComp();
+		Graph g5(task5);
+		cout << "Graph in task 5 has " <<g5.getCountСonnectComp() << " connectedness component" << endl;
+		g5.printConnectComp();
+	}
+	catch (const exception & exp)
+	{
+		cout << exp.what() << endl;
+	}
+		
 }
