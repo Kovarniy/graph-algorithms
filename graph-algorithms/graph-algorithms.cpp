@@ -279,7 +279,7 @@ int main()
 		cout << "Graph in task 4 has " << g4.getCountСonnectComp() << " connectedness component" << endl;
 		g4.printConnectComp();
 		Graph g5(task5);
-		cout << "Graph in task 5 has " <<g5.getCountСonnectComp() << " connectedness component" << endl;
+		cout << "Graph in task 5 has " << g5.getCountСonnectComp() << " connectedness component" << endl;
 		g5.printConnectComp();
 	}
 	catch (const exception & exp)
