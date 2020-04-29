@@ -14,6 +14,7 @@ private:
 	vector<vector<int>> adjMatrix;
 	vector<vector<int>> adjList;
 	vector<vector<int>> connectCompunents;
+	vector<vector<int>> tree;
 	vector<int> algorithmTrace;
 	// label need for check visited vertex
 	vector<bool> label;
@@ -97,6 +98,8 @@ private:
 
 	// this function print bfs trace
 	void bfs(int vertexNum) {
+		tree[vertexNum].push_back(vertexNum);
+
 		if (writeTrace) algorithmTrace.push_back(vertexNum);
 		label[vertexNum] = true;
 		for (auto iter : adjList[vertexNum])
@@ -105,12 +108,20 @@ private:
 				queForBfs.push(iter);
 				// formed vector of connection compinents
 				bufferComp.push_back(iter);
+
+				// formed tree В смежные вершины кладем номер ткущей ноды
+				for (auto it : tree[vertexNum])
+					tree[iter].push_back(it);
 			}
 
 		if (!queForBfs.empty())
 		{
 			// add firs queue element to buffer
 			int buffer = queForBfs.front();
+
+			// Кладем ноду в свое дерево
+			//tree[vertexNum].push_back(buffer);
+
 			// and remove it in queue
 			queForBfs.pop();
 			bfs(buffer);
@@ -126,6 +137,7 @@ public:
 	Graph(vector<vector<int>> v) {
 		bool isMatrix = true;
 		_matrSize = v.size();
+
 
 		// Check for input vector is matrix or list
 		for (int i = 0; i < v.size(); i++) {
@@ -166,6 +178,8 @@ public:
 					adjList[i].push_back(v[i][j]);
 			listToMatrix();
 		}
+		tree.resize(_matrSize);
+
 		lableInit();
 		initCountEdge();
 		initAnyParameters();
@@ -181,6 +195,14 @@ public:
 		for (int i = 0; i < _matrSize; i++, cout << endl)
 			for (int j = 0; j < adjList[i].size(); j++)
 				cout << adjList[i][j];
+	}
+
+	void printTree() {
+		for (int i = 0; i < tree.size(); i++, cout << endl) {
+			//cout << "Compounents numper " << i + 1 << " has next vertices: ";
+			for (int j = 0; j < tree[i].size(); j++)
+				cout << tree[i][j] + 1 << " ";
+		}
 	}
 
 	vector<int> getBfsTrace(int vertex) {
@@ -273,6 +295,18 @@ int main()
 								{ 0, 0, 0, 1, 1, 0, 0, 0, 1 },
 								{ 0, 0, 0, 1, 0, 0, 0, 1, 0 } });
 
+	// Task 6
+	vector<vector<int>> task6({ { 2, 9 }, 
+								{ 1, 3, 7, 8 },
+								{ 2, 7 },
+								{ 5, 9 },
+								{ 4, 6, 7, 9, 10 },
+								{ 5, 7, 10 },
+								{ 2, 3, 5, 6, 8 },
+								{ 2, 7, 9 },
+								{ 1, 4, 5, 8, 10 },
+								{ 5, 6, 9 }});
+
 	try
 	{
 		Graph g4(task4);
@@ -281,6 +315,8 @@ int main()
 		Graph g5(task5);
 		cout << "Graph in task 5 has " << g5.getCountСonnectComp() << " connectedness component" << endl;
 		g5.printConnectComp();
+		Graph g6(task6);
+		g6.printTree();
 	}
 	catch (const exception & exp)
 	{
